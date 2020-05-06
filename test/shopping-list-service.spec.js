@@ -1,105 +1,101 @@
-'use strict';
-const knex = require('knex');
-const ShopplingListService = require('../src/shopping-list-service');
+"use strict";
+const knex = require("knex");
+const ShoppingListService = require("../src/shopping-list-service");
 
-describe('Shopping List Object', () => {
+describe("Shopping List Object", () => {
   let db;
   //(id, name, price, date_added, checked, category)
   const testItems = [
     {
       id: 1,
-      name: 'Coffee',
-      price: '4.02',
-      date_added: new Date('2100-05-22T16:28:32.615Z'),
+      name: "Coffee",
+      price: "4.02",
+      date_added: new Date("2100-05-22T16:28:32.615Z"),
       checked: false,
-      category: 'Breakfast',
+      category: "Breakfast",
     },
     {
       id: 2,
-      name: 'Juice',
-      price: '8.53',
-      date_added: new Date('2100-05-22T16:28:32.615Z'),
+      name: "Juice",
+      price: "8.53",
+      date_added: new Date("2100-05-22T16:28:32.615Z"),
       checked: false,
-      category: 'Snack',
+      category: "Snack",
     },
     {
       id: 3,
-      name: 'Sandwich',
-      price: '12.22',
-      date_added: new Date('2100-05-22T16:28:32.615Z'),
+      name: "Sandwich",
+      price: "12.22",
+      date_added: new Date("2100-05-22T16:28:32.615Z"),
       checked: false,
-      category: 'Lunch',
+      category: "Lunch",
     },
   ];
 
-  before('setup db', () => {
+  before("setup db", () => {
     db = knex({
-      client: 'pg',
+      client: "pg",
       connection: process.env.TEST_DB_URL,
     });
   });
 
-  before('clean db', () => db('shopping_list').truncate());
-  afterEach('clean db', () => db('shopping_list').truncate());
+  before("clean db", () => db("shopping_list").truncate());
+  afterEach("clean db", () => db("shopping_list").truncate());
 
   // After all tests run, let go of the db connection
-  after('destroy db connection', () => db.destroy());
+  after("destroy db connection", () => db.destroy());
 
-  describe('getAllItems()', () => {
-    it('should return an empty array', () => {
-      return ShopplingListService.getAllItems(db).then((items) =>
+  describe("getAllItems()", () => {
+    it("should return an empty array", () => {
+      return ShoppingListService.getAllItems(db).then((items) =>
         expect(items).to.eql([])
       );
     });
-    context('When data present, returns data', () => {
-      beforeEach('insert test items', () =>
-        db('shopping_list').insert(testItems)
+    context("When data present, returns data", () => {
+      beforeEach("insert test items", () =>
+        db("shopping_list").insert(testItems)
       );
-      it('should return all items', () => {
-        return ShopplingListService.getAllItems(db).then((items) =>
+      it("should return all items", () => {
+        return ShoppingListService.getAllItems(db).then((items) =>
           expect(items).to.eql(testItems)
         );
       });
     });
   });
 
-  describe('insertItem()', () => {
-    it('should insert a new item', () => {
+  describe("insertItem()", () => {
+    it("should insert a new item", () => {
       let newItem = {
         id: 4,
-        name: 'Steak',
-        price: '50.02',
-        date_added: new Date('2100-05-22T16:28:32.615Z'),
+        name: "Steak",
+        price: "50.02",
+        date_added: new Date("2100-05-22T16:28:32.615Z"),
         checked: false,
-        category: 'Main',
+        category: "Main",
       };
 
-      return ShopplingListService.insertItem(db, newItem).then((items) =>
+      return ShoppingListService.insertItem(db, newItem).then((items) =>
         expect(items).to.eql(newItem)
       );
     });
   });
-  describe('updateItem()', () => {
-    context('Given shopping_list has data', () => {
-      before(() => {
-        return db.into('shopping_list').insert(testItems);
+  describe("updateItem()", () => {
+    context("Given shopping_list has data", () => {
+      beforeEach(() => {
+        return db("shopping_list").insert(testItems);
       });
-      it('updates item', () => {
-        const updateIdItem = '3';
+      it("updates item", () => {
+        const updateIdItem = 3;
         let updateItemField = {
-          name: 'Ham Sandmich',
-          price: '12.23',
-          date_added: new Date('2100-05-22T16:28:32.615Z'),
+          name: "Ham Sandmich",
+          price: "12.23",
+          date_added: new Date("2100-05-22T16:28:32.615Z"),
           checked: false,
-          category: 'Lunch',
+          category: "Lunch",
         };
-        return ShopplingListService.updateItem(
-          db,
-          updateIdItem,
-          updateItemField
-        )
+        return ShoppingListService.updateItem(db, updateIdItem, updateItemField)
           .then(() => {
-            ShopplingListService.getId(db, updateIdItem);
+            return ShoppingListService.getId(db, updateIdItem);
           })
           .then((item) => {
             expect(item).to.eql({
@@ -110,19 +106,21 @@ describe('Shopping List Object', () => {
       });
     });
   });
-  describe('deleteItem()', () => {
-    context('Given shopping_list has data', () => {
+  describe("deleteItem()", () => {
+    context("Given shopping_list has data", () => {
       before(() => {
-        return db.into('shopping_list').insert(insertItem);
+        return db.into("shopping_list").insert(testItems);
       });
-      it('deletes item', () => {
-        const deleteIdItem = '1';
-        return ShopplingListService.deleteItem(db, deleteIdItem)
+      it("deletes item", () => {
+        const deleteIdItem = 1;
+        return ShoppingListService.deleteItem(db, deleteIdItem)
           .then(() => {
-            ShopplingListService.getAllItems(db);
+            return ShoppingListService.getAllItems(db);
           })
           .then((item) => {
-            const expected = testItems.filter((id) => id !== deleteIdItem);
+            const expected = testItems.filter(
+              (item) => item.id !== deleteIdItem
+            );
             expect(item).to.eql(expected);
           });
       });
